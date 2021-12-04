@@ -7,9 +7,9 @@
 import dataclasses
 import json
 from datetime import time
-from typing import Any, TextIO
+from typing import IO, Any
 
-from .types import MediaMetadata
+from .types import MediaChapter, MediaMetadata
 from .utils import format_timestamp, parse_timestamp
 
 
@@ -70,14 +70,20 @@ def loads_metadata(content: str) -> MediaMetadata:
             The loaded metadata
     """
 
-    return json.loads(content, object_hook=_decoder)
+    data = json.loads(content, object_hook=_decoder)
+    chapters = [MediaChapter(**payload) for payload in data.get("chapters", [])]
+    return MediaMetadata(
+        version=data.get("version", "1"),
+        tags=data.get("tags", []),
+        chapters=chapters,
+    )
 
 
-def load_metadata(file_handle: TextIO) -> MediaMetadata:
+def load_metadata(file_handle: IO[str]) -> MediaMetadata:
     """Load some dumped metadata from a given file handle.
 
     Args:
-        file_handle (TextIO):
+        file_handle (IO[str]):
             The file handle to read metadata from
 
     Returns:
@@ -103,13 +109,13 @@ def dumps_metadata(metadata: MediaMetadata, **kwargs) -> str:
     return json.dumps(dataclasses.asdict(metadata), default=_encoder, **kwargs)
 
 
-def dump_metadata(metadata: MediaMetadata, file_handle: TextIO, **kwargs):
+def dump_metadata(metadata: MediaMetadata, file_handle: IO[str], **kwargs):
     """Dump some metadata as JSON to a given file handle.
 
     Args:
         metadata (~.types.MediaMetadata):
             The metadata to write to a file
-        file_handle (TextIO):
+        file_handle (IO[str]):
             The file handle to write the metadata to
     """
 

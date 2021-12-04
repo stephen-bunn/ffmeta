@@ -5,9 +5,13 @@
 """Contains UI presentation callables for the CLI app."""
 
 from functools import partial
+from typing import List, Optional, Tuple
 
-from rich.console import Console
+from rich import box
+from rich.console import Console, RenderableType
 from rich.panel import Panel
+from rich.table import Column, Table
+from typer.params import Option
 
 
 def display_panel(console: Console, message: str, title: str, style: str):
@@ -29,3 +33,35 @@ def display_panel(console: Console, message: str, title: str, style: str):
 
 display_error = partial(display_panel, title="Error", style="red")
 display_success = partial(display_panel, title="Success", style="green")
+
+
+def build_tags_renderable(
+    tags: List[Tuple[str, str]],
+    title: Optional[str] = None,
+) -> RenderableType:
+    """Build a renderable to represent a list of tags.
+
+    Args:
+        tags (List[Tuple[str, str]]):
+            The tags to build a console renderable for
+        title (Optional[str]):
+            An optional title for the tags to use when necessary
+            Defaults to None.
+
+    Returns:
+        RenderableType:
+            The renderable to use to represent a list of tags
+    """
+
+    table = Table(
+        Column("Tag", style="dim", justify="right"),
+        Column("Value"),
+        title=title,
+        title_justify="left",
+        box=box.MINIMAL_HEAVY_HEAD,
+    )
+
+    for key, value in tags:
+        table.add_row(key, value)
+
+    return table

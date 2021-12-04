@@ -9,10 +9,10 @@ from pathlib import Path
 
 import typer
 
-from ffmeta.serialize import dumps_metadata
+from ffmeta.serialize import dumps_metadata, load_metadata
 from ffmeta.services import probe_metadata
 
-from .ui import display_error
+from .ui import build_tags_renderable, display_error
 from .utils import get_console
 
 app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
@@ -46,3 +46,20 @@ def probe(ctx: typer.Context, media_filepath: Path = typer.Argument(...)):
         raise typer.Exit(1)
 
     console.print_json(dumps_metadata(probe_metadata(media_filepath)))
+
+
+@app.command("show")
+def show(ctx: typer.Context, metadata_filepath: Path = typer.Argument(...)):
+    """Show some metadata from a given metadata file."""
+
+    console = get_console(ctx)
+    if not metadata_filepath.is_file():
+        display_error(
+            console,
+            f"Metadata at [white]{metadata_filepath}[/white] doesn't exist",
+        )
+        raise typer.Exit(1)
+
+    with metadata_filepath.open("r") as metadata_io:
+        metadata = load_metadata(metadata_io)
+        console.print(build_tags_renderable(metadata.tags))
