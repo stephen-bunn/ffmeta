@@ -100,8 +100,8 @@ def build_header_renderable(title: str, message: str) -> RenderableType:
     """
 
     return Panel(
-        f"[magenta]{title}[/magenta] - {message}",
-        box=box.HEAVY,
+        f"[magenta]{title}[/magenta]\n{message}",
+        box=box.ROUNDED,
         border_style=accent_style,
     )
 

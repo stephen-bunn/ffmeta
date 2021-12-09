@@ -234,9 +234,6 @@ def prompt_media_tags(
         value = prompt_tag(console, definition, default=default)
         tags.append((definition, value))
 
-    if not prompt_confirm(console, "\nContinue?"):
-        return tags
-
     while True:
         console.clear()
         console.print(
