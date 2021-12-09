@@ -5,12 +5,15 @@
 """Contains generic helpers that the CLI needs to isolate."""
 
 from functools import partial
+from pathlib import Path
 from typing import Any, Callable
 
 import typer
 from rich.console import Console
 
 from ffmeta.utils import noop
+
+from .ui import display_error
 
 
 def _get_root_context(ctx: typer.Context) -> typer.Context:
@@ -87,3 +90,26 @@ def get_echo(ctx: typer.Context) -> Callable[[str], Any]:
 
     console = get_console(ctx)
     return partial(console.print)
+
+
+def ensure_path_exists(console: Console, path: Path):
+    """Ensure that a given path exists before continuing.
+
+    Displays an error panel and exits the app if the path doesn't exit.
+
+    Args:
+        console (rich.Console):
+            The console to use to display the error
+        path (pathlib.Path):
+            The path to validate exists
+
+    Raises:
+        typer.Exit:
+            If the given path does not exist
+    """
+
+    if path.exists():
+        return
+
+    display_error(console, f"File at [white]{path}[/white] does not exist!")
+    raise typer.Exit(1)

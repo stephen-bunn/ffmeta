@@ -5,7 +5,7 @@
 """Contains various service calls useful for the project."""
 
 from pathlib import Path
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from typing import Dict, List, Literal, Optional, Tuple, TypedDict, Union
 from warnings import warn
 
@@ -291,15 +291,12 @@ def write_metadata(
             f"{media_filepath}, no in-place modifications allowed"
         )
 
-    with NamedTemporaryFile("w") as metadata_io:
-        dump_ffmetadata(metadata, metadata_io)
-        metadata_filepath = Path(metadata_io.name)
-        metadata_io.close()
+    with TemporaryDirectory(suffix="ffmeta") as temp_dirname:
+        temp_dirpath = Path(temp_dirname)
+        metadata_filepath = temp_dirpath / f"{media_filepath.stem}.ffmetadata.ini"
 
-        if not metadata_filepath.is_file():
-            raise IOError(
-                f"Failed to write temporary metadata out to path {metadata_filepath}"
-            )
+        with metadata_filepath.open("w") as metadata_io:
+            dump_ffmetadata(metadata, metadata_io)
 
         command = ffmpeg.input(
             metadata_filepath.as_posix(), **{"i": media_filepath.as_posix()}

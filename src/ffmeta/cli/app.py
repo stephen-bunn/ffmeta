@@ -6,16 +6,24 @@
 
 import warnings
 from pathlib import Path
+from typing import Optional
 
 import typer
 
+from ffmeta.cli.ui import (
+    build_chapters_renderable,
+    build_header_renderable,
+    build_tags_renderable,
+)
 from ffmeta.serialize import dumps_metadata, load_metadata
 from ffmeta.services import probe_metadata
 
-from .ui import build_tags_renderable, display_error
-from .utils import get_console
+from .edit import edit_app
+from .helpers import apply_metadata
+from .utils import ensure_path_exists, get_console
 
 app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
+app.add_typer(edit_app)
 
 
 @app.callback()
@@ -34,32 +42,44 @@ def main(
 
 
 @app.command("probe")
-def probe(ctx: typer.Context, media_filepath: Path = typer.Argument(...)):
+def probe(ctx: typer.Context, media: Path = typer.Argument(...)):
     """Probe some media file for existing metadata."""
 
     console = get_console(ctx)
-    if not media_filepath.is_file():
-        display_error(
-            console,
-            f"Media at [white]{media_filepath}[/white] doesn't exist",
-        )
-        raise typer.Exit(1)
+    ensure_path_exists(console, media)
 
-    console.print_json(dumps_metadata(probe_metadata(media_filepath)))
+    console.print_json(dumps_metadata(probe_metadata(media)))
+
+
+@app.command("apply")
+def apply(
+    ctx: typer.Context,
+    media: Path = typer.Argument(...),
+    metadata: Path = typer.Argument(...),
+    out: Optional[Path] = typer.Option(None, "-o", "--out"),
+    overwrite: bool = typer.Option(False),
+):
+    """Apply some existing probed metadata to some media."""
+
+    console = get_console(ctx)
+    ensure_path_exists(console, media)
+    ensure_path_exists(console, metadata)
+
+    with metadata.open("r") as metadata_io:
+        meta = load_metadata(metadata_io)
+
+    apply_metadata(console, media, meta, output_filepath=out, overwrite=overwrite)
 
 
 @app.command("show")
-def show(ctx: typer.Context, metadata_filepath: Path = typer.Argument(...)):
-    """Show some metadata from a given metadata file."""
+def show(ctx: typer.Context, media: Path = typer.Argument(...)):
+    """Show some media metadata."""
 
     console = get_console(ctx)
-    if not metadata_filepath.is_file():
-        display_error(
-            console,
-            f"Metadata at [white]{metadata_filepath}[/white] doesn't exist",
-        )
-        raise typer.Exit(1)
+    ensure_path_exists(console, media)
 
-    with metadata_filepath.open("r") as metadata_io:
-        metadata = load_metadata(metadata_io)
-        console.print(build_tags_renderable(metadata.tags))
+    metadata = probe_metadata(media)
+    console.clear()
+    console.print(build_header_renderable(f"{media.name} Metadata"))
+    console.print(build_tags_renderable(metadata.iter_defined_tags(), title="Tags"))
+    console.print(build_chapters_renderable(metadata.chapters, title="Chapters"))
