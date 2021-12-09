@@ -259,10 +259,10 @@ TAG_DEFINITIONS: Dict[str, TagDefinition] = {
         "Generic keywords separated by commas",
         "keywords",
     ),
-    "URL": TagDefinition(
+    "url": TagDefinition(
         "URL",
         "A URL that is related to the content",
-        "URL",
+        "url",
     ),
     "podcast": TagDefinition(
         "Podcast Flag",
