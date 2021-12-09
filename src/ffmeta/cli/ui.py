@@ -11,6 +11,7 @@ from typing import Generator, Iterable, Iterator, List, Optional, Protocol, Tupl
 from rich import box
 from rich.console import Console, RenderableType
 from rich.panel import Panel
+from rich.style import Style
 from rich.table import Column, Table
 
 from ffmeta.types import MediaChapter, TagDefinition
@@ -84,10 +85,12 @@ def status(console: Console, message: str) -> Generator[StatusProto, None, None]
         yield status
 
 
-def build_header_renderable(message: str) -> RenderableType:
+def build_header_renderable(title: str, message: str) -> RenderableType:
     """Build a basic header renderable that contains a message.
 
     Args:
+        title (str):
+            The title to display before the message
         message (str):
             The message to display within the header
 
@@ -96,7 +99,11 @@ def build_header_renderable(message: str) -> RenderableType:
             The renderable to display as a header
     """
 
-    return Panel(message, box=box.HEAVY, border_style=accent_style)
+    return Panel(
+        f"[magenta]{title}[/magenta] - {message}",
+        box=box.HEAVY,
+        border_style=accent_style,
+    )
 
 
 def build_tags_renderable(
@@ -231,7 +238,7 @@ def build_chapters_renderable(
         Column("Index", style=debug_style, no_wrap=True),
         Column("Title", style=info_style),
         Column("Period", style=debug_style),
-        Column("Duration", style=debug_style),
+        Column("Duration", style=debug_style + Style(italic=True)),
         title=title,
         title_justify="left",
         title_style=accent_style,

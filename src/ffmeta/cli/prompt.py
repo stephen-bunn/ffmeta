@@ -222,7 +222,9 @@ def prompt_media_tags(
 
     for definition in iter_desired_tags(media_filepath):
         console.clear()
-        console.print(build_header_renderable(f"{media_filepath.name} Tags"))
+        console.print(
+            build_header_renderable("Tags", media_filepath.absolute().as_posix())
+        )
         console.print(build_tags_renderable(tags))
 
         default: Optional[str] = None
@@ -237,8 +239,13 @@ def prompt_media_tags(
 
     while True:
         console.clear()
-        console.print(build_header_renderable(f"{media_filepath.name} Tags"))
+        console.print(
+            build_header_renderable("Tags", media_filepath.absolute().as_posix())
+        )
         console.print(build_tags_renderable(tags))
+
+        if not prompt_confirm(console, "\nContinue?"):
+            return tags
 
         tag_definition: Optional[TagDefinition] = None
         while tag_definition is None:
@@ -253,9 +260,6 @@ def prompt_media_tags(
         console.print()
         value = prompt_tag(console, tag_definition)
         tags.append((tag_definition, value))
-
-        if not prompt_confirm(console, "\nContinue?"):
-            return tags
 
 
 def prompt_media_chapter(
@@ -288,7 +292,9 @@ def prompt_media_chapter(
     """
 
     console.clear()
-    console.print(build_header_renderable(f"{media_filepath.name} Chapters"))
+    console.print(
+        build_header_renderable("Chapters", media_filepath.absolute().as_posix())
+    )
     console.print(
         build_chapters_renderable(
             previous_chapters or [],
