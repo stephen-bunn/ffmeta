@@ -12,7 +12,13 @@ from typing import List, Optional, Tuple
 from rich.console import Console
 from rich.prompt import Confirm, Prompt, PromptBase
 
-from ffmeta.types import MediaChapter, MediaMetadata, TagDefinition, iter_desired_tags
+from ffmeta.types import (
+    TAG_DEFINITIONS,
+    MediaChapter,
+    MediaMetadata,
+    TagDefinition,
+    iter_desired_tags,
+)
 from ffmeta.utils import format_timestamp, parse_timestamp, timestamp_to_milliseconds
 
 from .style import danger_style
@@ -49,6 +55,7 @@ def prompt_value(
     message: str,
     default: Optional[str] = None,
     hidden: bool = False,
+    choices: Optional[List[str]] = None,
     empty_allowed: bool = False,
     trailing_whitespace_allowed: bool = False,
     prompt_type: PromptBase[str] = Prompt,  # type: ignore
@@ -66,6 +73,9 @@ def prompt_value(
         hidden (bool):
             If true, hides user input.
             Defaults to False.
+        choices (Optional[List[str]]):
+            An optional list of allowed choices for the user to provide.
+            Defaults to None.
         empty_allowed (bool):
             Allows empty input from the user.
             Defaults to False.
@@ -88,6 +98,7 @@ def prompt_value(
                 message,
                 console=console,
                 password=hidden,
+                choices=choices,
                 default=default or "",
                 show_default=default is not None,
             )
@@ -221,7 +232,30 @@ def prompt_media_tags(
         value = prompt_tag(console, definition, default=default)
         tags.append((definition, value))
 
-    return tags
+    if not prompt_confirm(console, "\nContinue?"):
+        return tags
+
+    while True:
+        console.clear()
+        console.print(build_header_renderable(f"{media_filepath.name} Tags"))
+        console.print(build_tags_renderable(tags))
+
+        tag_definition: Optional[TagDefinition] = None
+        while tag_definition is None:
+            tag_definition = TAG_DEFINITIONS[
+                prompt_value(
+                    console,
+                    "[dim]Tag Definition Key[/dim]",
+                    choices=list(TAG_DEFINITIONS.keys()),
+                )
+            ]
+
+        console.print()
+        value = prompt_tag(console, tag_definition)
+        tags.append((tag_definition, value))
+
+        if not prompt_confirm(console, "\nContinue?"):
+            return tags
 
 
 def prompt_media_chapter(
