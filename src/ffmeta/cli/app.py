@@ -80,6 +80,6 @@ def show(ctx: typer.Context, media: Path = typer.Argument(...)):
 
     metadata = probe_metadata(media)
     console.clear()
-    console.print(build_header_renderable("Metadata", media.absolute().as_posix()))
+    console.print(build_header_renderable("Metadata", media))
     console.print(build_tags_renderable(metadata.iter_defined_tags(), title="Tags"))
     console.print(build_chapters_renderable(metadata.chapters, title="Chapters"))

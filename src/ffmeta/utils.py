@@ -20,6 +20,35 @@ def noop(*args, **kwargs) -> None:
     return None
 
 
+def timestamp_to_time(timestamp: str) -> time:
+    """Build a time instance from a user provided timestamp.
+
+    Args:
+        timestamp (str):
+            The user provided timestamp
+
+    Raises:
+        ValueError:
+            If the given timestamp string does not match the expected pattern
+
+    Returns:
+        time:
+            The produced time instance
+    """
+
+    match = TIMESTAMP_PATTERN.match(timestamp)
+    if not match:
+        raise ValueError(f"timestamp {timestamp} is not a valid timestamp")
+
+    groups = match.groupdict()
+    return time(
+        hour=int(groups.get("hours", 0) or 0),
+        minute=int(groups.get("minutes", 0)),
+        second=int(groups.get("seconds", 0)),
+        microsecond=int(groups.get("milliseconds", 0) or 0) * 1000,
+    )
+
+
 def parse_timestamp(timestamp: str) -> time:
     """Parse a formatted timestamp as a time instance.
 

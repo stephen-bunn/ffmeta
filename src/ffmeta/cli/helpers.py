@@ -110,14 +110,14 @@ def apply_metadata(
         else media_filepath.with_suffix(f".ffmeta{media_filepath.suffix}")
     )
 
-    if not prompt_confirm(console, f"\nWrite metadata to {out}?"):
+    if not prompt_confirm(console, f"\nWrite metadata to [bold green]{out}[/]?"):
         display_error(console, "User aborted writing metadata")
         raise typer.Exit(0)
 
-    with status(console, f"Writing metadata to [white]{out}[/white]..."):
+    with status(console, f"Writing metadata to [bold green]{out}[/bold green]..."):
         write_metadata(metadata, media_filepath, out, overwrite=overwrite)
 
     display_success(
         console,
-        f"Successfully wrote chapters to [white]{out.absolute()}[/white]!",
+        f"Successfully wrote chapters to [bold white]{out.absolute()}[/bold white]!",
     )

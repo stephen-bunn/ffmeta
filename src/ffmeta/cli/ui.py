@@ -6,10 +6,12 @@
 
 import contextlib
 from functools import partial
+from pathlib import Path
 from typing import Generator, Iterable, Iterator, List, Optional, Protocol, Tuple
 
 from rich import box
 from rich.console import Console, RenderableType
+from rich.padding import Padding
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Column, Table
@@ -85,23 +87,29 @@ def status(console: Console, message: str) -> Generator[StatusProto, None, None]
         yield status
 
 
-def build_header_renderable(title: str, message: str) -> RenderableType:
+def build_header_renderable(title: str, filepath: Path) -> RenderableType:
     """Build a basic header renderable that contains a message.
 
     Args:
         title (str):
             The title to display before the message
-        message (str):
-            The message to display within the header
+        filepath (~pathlib.Path):
+            The filepath of the media being handled
 
     Returns:
         RenderableType:
             The renderable to display as a header
     """
 
+    abs_filepath = filepath.absolute()
     return Panel(
-        f"[magenta]{title}[/magenta]\n{message}",
-        box=box.ROUNDED,
+        Padding(
+            f"[dim]{abs_filepath.parent}/[/dim][bold green]{abs_filepath.name}[/]",
+            (1, 0),
+        ),
+        title=title,
+        title_align="left",
+        box=box.HEAVY,
         border_style=accent_style,
     )
 
@@ -239,6 +247,7 @@ def build_chapters_renderable(
         Column("Title", style=info_style),
         Column("Period", style=debug_style),
         Column("Duration", style=debug_style + Style(italic=True)),
+        Column("Issue", style=danger_style),
         title=title,
         title_justify="left",
         title_style=accent_style,
@@ -246,11 +255,7 @@ def build_chapters_renderable(
         expand=True,
     )
 
-    has_issues = False
     for (row_index, row) in enumerate(iter_chapter_rows(previous_chapters)):
-        if row[-1] is not None:
-            has_issues = True
-
         table.add_row(f"{row_index:02d}", *row)
 
     if next_chapters:
@@ -262,12 +267,6 @@ def build_chapters_renderable(
                 previous_chapter=current_chapter,
             )
         ):
-            if row[-1] is not None:
-                has_issues = True
-
             table.add_row(f"{row_count + row_index:02d}", *row)
-
-    if has_issues:
-        table.add_column("Issue", style=danger_style)
 
     return table

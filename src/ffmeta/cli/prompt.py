@@ -19,7 +19,7 @@ from ffmeta.types import (
     TagDefinition,
     iter_desired_tags,
 )
-from ffmeta.utils import format_timestamp, parse_timestamp, timestamp_to_milliseconds
+from ffmeta.utils import format_timestamp, timestamp_to_time
 
 from .style import danger_style
 from .ui import (
@@ -192,8 +192,7 @@ def prompt_time(
     while True:
         value = prompt_value(console, message, default=default)
         try:
-            timestamp_to_milliseconds(value)
-            return parse_timestamp(value)
+            return timestamp_to_time(value)
         except ValueError:
             console.print(f"{value} is not a valid timestamp", style=danger_style)
 
@@ -222,9 +221,7 @@ def prompt_media_tags(
 
     for definition in iter_desired_tags(media_filepath):
         console.clear()
-        console.print(
-            build_header_renderable("Tags", media_filepath.absolute().as_posix())
-        )
+        console.print(build_header_renderable("Tags", media_filepath))
         console.print(build_tags_renderable(tags))
 
         default: Optional[str] = None
@@ -236,9 +233,7 @@ def prompt_media_tags(
 
     while True:
         console.clear()
-        console.print(
-            build_header_renderable("Tags", media_filepath.absolute().as_posix())
-        )
+        console.print(build_header_renderable("Tags", media_filepath))
         console.print(build_tags_renderable(tags))
 
         if not prompt_confirm(console, "\nContinue?"):
@@ -255,7 +250,10 @@ def prompt_media_tags(
             ]
 
         console.print()
-        value = prompt_tag(console, tag_definition)
+        tag_default: Optional[str] = None
+        with contextlib.suppress(StopIteration):
+            tag_default = next(metadata.find_tags(tag_definition))
+        value = prompt_tag(console, tag_definition, default=tag_default)
         tags.append((tag_definition, value))
 
 
@@ -289,9 +287,7 @@ def prompt_media_chapter(
     """
 
     console.clear()
-    console.print(
-        build_header_renderable("Chapters", media_filepath.absolute().as_posix())
-    )
+    console.print(build_header_renderable("Chapters", media_filepath))
     console.print(
         build_chapters_renderable(
             previous_chapters or [],
@@ -378,5 +374,6 @@ def prompt_media_chapters(
             previous_chapters=chapters,
         )
         chapters.append(chapter)
+
         if not prompt_confirm(console, "\nContinue?"):
             return chapters

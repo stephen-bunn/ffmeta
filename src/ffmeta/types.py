@@ -70,10 +70,10 @@ TAG_DEFINITIONS: Dict[str, TagDefinition] = {
         "General comments",
         "comment",
     ),
-    "compliation": TagDefinition(
-        "Compliation",
-        "Name of the compliation the content is a part of",
-        "compliation",
+    "compilation": TagDefinition(
+        "Compilation",
+        "Name of the compilation the content is a part of",
+        "compilation",
     ),
     "copyright": TagDefinition(
         "Copyright",
