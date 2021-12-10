@@ -291,6 +291,8 @@ REQUIRED_TAG_DEFINITIONS: List[TagDefinition] = [
     TAG_DEFINITIONS["encoder"],
     TAG_DEFINITIONS["encoded_by"],
     TAG_DEFINITIONS["creation_time"],
+    TAG_DEFINITIONS["date"],
+    TAG_DEFINITIONS["year"],
     TAG_DEFINITIONS["rating"],
     TAG_DEFINITIONS["copyright"],
 ]
@@ -300,6 +302,8 @@ DESIRED_TAG_DEFINITIONS: Dict[MediaType, List[TagDefinition]] = {
         TAG_DEFINITIONS["hd_video"],
     ],
     MediaType.AUDIO: [
+        TAG_DEFINITIONS["album"],
+        TAG_DEFINITIONS["artist"],
         TAG_DEFINITIONS["genre"],
         TAG_DEFINITIONS["track"],
         TAG_DEFINITIONS["disc"],
